@@ -93,10 +93,6 @@ module Wechat
         @user_defined_scan_responders ||= []
       end
 
-      def user_defined_open_authorize_responders
-        @user_open_authorize_responders ||= []
-      end
-
       def user_defined_location_responders
         @user_defined_location_responders ||= []
       end
@@ -133,7 +129,7 @@ module Wechat
             yield(* user_defined_view_responders(message[:EventKey]), message[:EventKey])
           elsif message[:Event] == 'click'
             yield(* match_responders(responders, message[:EventKey]))
-          elsif known_scan_key_lists.include?(message[:EventKey]) && %w[scan subscribe open_authorize scancode_push scancode_waitmsg].freeze.include?(message[:Event])
+          elsif known_scan_key_lists.include?(message[:EventKey]) && %w[scan subscribe scancode_push scancode_waitmsg].freeze.include?(message[:Event])
             yield(* known_scan_with_match_responders(user_defined_scan_responders, message))
           elsif message[:Event] == 'batch_job_result'
             yield(* user_defined_batch_job_responders(message[:BatchJob][:JobType]), message[:BatchJob])
