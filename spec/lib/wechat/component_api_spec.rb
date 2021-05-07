@@ -59,8 +59,8 @@ RSpec.describe Wechat::ComponentApi do
                                         component_appid: 'component_appid', component_access_token: 'component_access_token'
                                     })
                                     .and_return(response_result)
-      result = subject.get_auth_url('http://example.com/?a=\11\15')
-      expect(result).to match (/code_test/)
+      url, code = subject.get_auth_url('http://example.com/?a=\11\15')
+      expect(url).to match (/code_test/)
     end
   end
 end

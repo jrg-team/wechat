@@ -59,7 +59,15 @@ module Wechat
     def get_auth_url(redirect_to)
       result = get_pre_auth_code
       pre_auto_code = result.stringify_keys["pre_auth_code"]
-      "https://mp.weixin.qq.com/cgi-bin/componentloginpage?component_appid=#{component_appid}&pre_auth_code=#{pre_auto_code}&redirect_uri=#{URI.encode(redirect_to)}&auth_type=1"
+      return "https://mp.weixin.qq.com/cgi-bin/componentloginpage?component_appid=#{component_appid}&pre_auth_code=#{pre_auto_code}&redirect_uri=#{URI.encode(redirect_to)}&auth_type=1", pre_auto_code
+    end
+
+    def get_auth_details_by_authorization_code(code)
+      result = get 'api_query_auth', params: {
+          component_appid: component_appid,
+          authorization_code: code
+      }
+      result["authorization_info"]
     end
   end
 end
