@@ -11,7 +11,8 @@ RSpec.describe Wechat::Token::ComponentAccessToken do
   end
 
   before :each do
-    allow(client).to receive(:get)
+    # Todo: Fix the spec
+    allow(client).to receive(:post)
                          .with('api_component_token', params: {component_appid: 'component_appid',
                                                                component_appsecret: 'component_appsecret',
                                                                component_verify_ticket: 'component_verify_ticket'})
