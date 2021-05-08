@@ -82,12 +82,18 @@ module Wechat
     end
 
     def refresh_authorizer_token(auth_hash)
-      post 'api_authorizer_token',
+      update_result = post 'api_authorizer_token',
            JSON.generate(
                component_appid: component_appid,
                authorizer_appid: auth_hash['appid'],
                authorizer_refresh_token: auth_hash['refresh_token']
            )
+      result_hash = {
+          "access_token": update_result['authorizer_access_token'],
+          "refresh_token": update_result['authorizer_refresh_token'],
+          "token_updated_at": Time.now
+      }
+      result_hash
     end
 
     # set_industry
@@ -150,10 +156,7 @@ module Wechat
       result = yield(params.merge(access_token: token))
       return result, auth_hash
     rescue AccessTokenExpiredError
-      update_result = update_authorizer_access_token(auth_hash)
-      auth_hash["access_token"] = update_result['authorizer_access_token']
-      auth_hash["refresh_token"] = update_result['authorizer_refresh_token']
-      auth_hash["token_updated_at"] = Time.now
+      auth_hash.merge(update_authorizer_access_token(auth_hash))
       retry unless (tries -= 1).zero?
     end
 
