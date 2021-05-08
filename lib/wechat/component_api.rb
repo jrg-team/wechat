@@ -118,7 +118,7 @@ module Wechat
     # get all template
     def get_all_templates_for_authorizer(auth_hash = {})
       commission_get auth_hash, 'template/get_all_private_template',
-                     base: Wechat::Api::WXA_API_BASE
+                     base: Wechat::Api::API_BASE
     end
 
     # add template, return [result, auth_hash]
@@ -127,7 +127,7 @@ module Wechat
                       'message/template/send',
                       message.to_json,
                       content_type: :json,
-                      base: Wechat::Api::WXA_API_BASE
+                      base: Wechat::Api::API_BASE
     end
 
     protected
@@ -153,6 +153,7 @@ module Wechat
     def with_authorizer_access_token(auth_hash = {}, params = {}, tries = 2)
       raise InvalidCredentialError unless auth_hash.is_a?(Hash) && auth_hash["access_token"] && auth_hash["appid"]
       token = auth_hash["access_token"]
+      params ||= {}
       result = yield(params.merge(access_token: token))
       return result, auth_hash
     rescue AccessTokenExpiredError
