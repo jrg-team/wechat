@@ -9,6 +9,7 @@ module Wechat
   class ComponentApi < ApiBase
     attr_reader :component_appid, :component_secret, :component_verify_ticket_file, :verify_ticket
     attr_accessor :authorizer_token_updated_callback
+
     def initialize(
         component_appid,
         component_secret,
@@ -50,7 +51,7 @@ module Wechat
 
     # update verify ticket
     def get_pre_auth_code
-      get 'api_create_preauthcode', params: {component_appid: component_appid}
+      post 'api_create_preauthcode', JSON.generate(component_appid: component_appid)
     end
 
     # get auth url, redirect_to should not be encoded
@@ -62,19 +63,21 @@ module Wechat
 
     # get authorization details
     def get_auth_details_by_authorization_code(code)
-      result = get 'api_query_auth', params: {
-          component_appid: component_appid,
-          authorization_code: code
-      }
+      result = post 'api_query_auth',
+                    JSON.generate(
+                        component_appid: component_appid,
+                        authorization_code: code
+                    )
       result["authorization_info"]
     end
 
     # get authorizer info
     def get_authorizer_info(authorizer_appid)
-      result = get 'api_get_authorizer_info', params: {
-          component_appid: component_appid,
-          authorizer_appid: authorizer_appid
-      }
+      result = post 'api_get_authorizer_info',
+                    JSON.generate(
+                        component_appid: component_appid,
+                        authorizer_appid: authorizer_appid
+                    )
       result["authorizer_info"]
     end
 
