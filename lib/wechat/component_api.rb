@@ -150,7 +150,7 @@ module Wechat
         component_appid: component_appid,
         component_access_token: access_token.token
       }
-      client.get 'oauth2/access_token', params: params, base: Wechat::Api::OAUTH2_BASE
+      client.get 'oauth2/component/access_token', params: params, base: Wechat::Api::OAUTH2_BASE
     end
 
     def get_web_userinfo(web_access_token, openid, lang = 'zh_CN')
