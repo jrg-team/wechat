@@ -130,12 +130,13 @@ module Wechat
                       base: Wechat::Api::API_BASE
     end
 
-    def generate_oauth2_url_for_authorizer(auth_hash, redirect_to)
+    def generate_oauth2_url_for_authorizer(auth_hash, redirect_to, state = '')
       oauth2_params = {
         appid: auth_hash["appid"],
         redirect_uri: redirect_to,
         scope: 'snsapi_base',
         response_type: 'code',
+        state: state,
         component_appid: component_appid
       }
       "https://open.weixin.qq.com/connect/oauth2/authorize?#{oauth2_params.to_query}#wechat_redirect"
