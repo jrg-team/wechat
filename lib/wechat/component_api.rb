@@ -121,13 +121,39 @@ module Wechat
                      base: Wechat::Api::API_BASE
     end
 
-    # add template, return [result, auth_hash]
+    # add template
     def send_template_message_for_authorizer(auth_hash = {}, message)
       commission_post auth_hash,
                       'message/template/send',
                       message.to_json,
                       content_type: :json,
                       base: Wechat::Api::API_BASE
+    end
+
+    def generate_oauth2_url_for_authorizer(auth_hash, redirect_to)
+      oauth2_params = {
+        appid: auth_hash["appid"],
+        redirect_uri: redirect_to,
+        scope: 'snsapi_base',
+        response_type: 'code',
+        component_appid: component_appid
+      }
+      "https://open.weixin.qq.com/connect/oauth2/authorize?#{oauth2_params.to_query}#wechat_redirect"
+    end
+
+    def authorizer_web_access_token(code, authorizer_appid)
+      params = {
+        appid: authorizer_appid,
+        code: code,
+        grant_type: 'authorization_code',
+        component_appid: component_appid,
+        component_access_token: access_token.token
+      }
+      client.get 'oauth2/access_token', params: params, base: Wechat::Api::OAUTH2_BASE
+    end
+
+    def get_web_userinfo(web_access_token, openid, lang = 'zh_CN')
+      client.get 'userinfo', params: { access_token: web_access_token, openid: openid, lang: lang }, base: Wechat::Api::OAUTH2_BASE
     end
 
     protected
