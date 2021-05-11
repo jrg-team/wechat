@@ -29,6 +29,15 @@ RSpec.describe WechatController, type: :controller do
 
   let(:text_message) { message_base.merge(MsgType: 'text', Content: 'text message') }
 
+  let(:component_verify_ticket_message) do
+    {
+      AppId: 'some_appid',
+      CreateTime: '1348831860',
+      InfoType: 'component_verify_ticket',
+      ComponentVerifyTicket: 'some_verify_ticket'
+    }
+  end
+
   specify 'config responder using global config' do
     expect(controller.class.wechat).to eq(Wechat.api)
     expect(controller.class.token).to eq(Wechat.config.token)
@@ -97,6 +106,7 @@ RSpec.describe WechatController, type: :controller do
       on :event, with: 'subscribe', respond: 'subscribe event'
       on :click, with: 'EVENTKEY', respond: 'EVENTKEY clicked'
       on :image, respond: 'image content'
+      on :component, with: 'component_verify_ticket', respond: 'component_verify_ticket event'
     end
 
     specify 'find first responder for matched type' do
@@ -133,6 +143,12 @@ RSpec.describe WechatController, type: :controller do
       expect do |b|
         controller.class.responder_for(MsgType: 'event', Event: 'click', EventKey: 'EVENTKEY', &b)
       end.to yield_with_args({ respond: 'EVENTKEY clicked', with: 'EVENTKEY' }, 'EVENTKEY')
+    end
+
+    specify "find 'component_verify_ticket event' responder if event request matches component_verify_ticket" do
+      expect do |b|
+        controller.class.responder_for(InfoType: 'component_verify_ticket', &b)
+      end.to yield_with_args({ respond: 'component_verify_ticket event', with: 'component_verify_ticket' }, 'component_verify_ticket')
     end
   end
 
@@ -292,6 +308,13 @@ RSpec.describe WechatController, type: :controller do
       on :link do |message|
         message.reply.text("link: #{message[:Url]}")
       end
+
+      on :component, with: 'component_verify_ticket' do |message|
+        Wechat::ApiLoader.class_eval { @configs = nil }
+        ENV['WECHAT_CONF_FILE'] = File.join(Dir.getwd, 'spec/dummy/config/dummy_wechat.yml')
+        Wechat.api(:component).save_verify_ticket(message[:ComponentVerifyTicket], message[:CreateTime])
+        message.reply.success
+      end
     end
 
     specify 'response with respond field' do
@@ -424,6 +447,13 @@ RSpec.describe WechatController, type: :controller do
       message = message_base.merge(MsgType: 'link', Url: 'link_url', Title: 'title', Description: 'description')
       post :create, params: signature_params.merge(xml: message)
       expect(xml_to_hash(response)[:Content]).to eq('link: link_url')
+    end
+
+    specify 'response success with component_verify_ticket event' do
+      post :create, params: signature_params.merge(xml: component_verify_ticket_message)
+      expect(response.code).to eq('200')
+      expect(response.body).to eq('success')
+      expect(Wechat.api(:component).verify_ticket.ticket).to eq(component_verify_ticket_message[:ComponentVerifyTicket])
     end
   end
 
